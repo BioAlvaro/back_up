@@ -1,0 +1,5 @@
+This script does a backup of two folders, checking names, size of the folder and md5 checksums.
+
+Still needs to be updated to recognize folders/directories.
+
+
