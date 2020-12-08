@@ -1,7 +1,7 @@
 import shutil
 import os
 import hashlib 
-import re
+
 
 
 
@@ -206,7 +206,7 @@ print()
 files_copied3=0
 folder_copied3=0
 
-
+md5_passed =0
 
 for key, value in dic_source_md5.items():
 
@@ -214,7 +214,7 @@ for key, value in dic_source_md5.items():
 
   if value == dic_destination_md5[key]:
     
-
+    md5_passed+=1
     print(key, 'passed the md5 check. And will not be copied')
     print()
 
@@ -245,7 +245,7 @@ for key, value in dic_source_md5.items():
       shutil.copytree(os.path.join(path_source,key),os.path.join(path_destination,key))
       print(key, 'copied succesfully.')
       folder_copied3+=1
-      p
+      
       dic_destination_md5[key] = md5_folders(os.path.join(path_destination,key))
       
 
@@ -259,8 +259,13 @@ print('The number of files copied are:', files_copied3)
 print( 'The number of folders copied are:', folder_copied3)
 
 print()
-print('*****************Checking the md5 of the whole folder*******************')
+print('*****************Results*******************')
 print()
+
+
+print('The number of files in original folder is:', len(dic_source_md5))
+print('The number of files in backup folder is:',len(dic_destination_md5))
+print('The number of files copies is:', len(dic_destination_md5)-len(dest_list))
 
 
 if md5_folders(path_source)==md5_folders(path_destination):
