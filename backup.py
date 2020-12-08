@@ -64,21 +64,6 @@ def md5_folders(directory, verbose=0):
 
 
 
-def copy(source, destination):
-  if files not in dest_list:
-#This command will copy everything that is not a folder
-    if os.path.isdir(os.path.join(path_source,files)):
-      shutil.copytree(src=os.path.join(source,files), dst=os.path.join(destination,files))
-
-#== md5_folders(os.path.join(destination, files),1))
- 
- 
-#print('The checksum for the file:',files, 'is:', md5(os.path.join(path_source,files))== md5(os.path.join(path_destination, files)))
-      print('The files inside directories are:', files,'and the checksum is:',md5_folders(os.path.join(source,files)) == md5_folders(os.path.join(destination,files)))
-    else:
-      shutil.copy(src=os.path.join(source,files), dst=destination)
-      print('The files copied are:', files,'and the checksum is :', md5_files(os.path.join(source,files))== md5_files(os.path.join(destination, files)))
-
 
 dic_source_md5 = {}
 
@@ -162,9 +147,11 @@ for key in dic_source_size:
 
 
    
-print()    
+print()  
+
 print('The number of files copied are:', files_copied)
 print( 'The number of folders copied are:', folder_copied)
+
 print()
 print('**************Checking if the files have the same size****************************')
 print()
@@ -208,11 +195,14 @@ for key, value in dic_source_size.items():
 
 
 print()    
+
 print('The number of files copied are:', files_copied2)
 print( 'The number of folders copied are:', folder_copied2)
+
 print()
 print('*************************Checking the md5 checksums*******************************')
 print()
+
 files_copied3=0
 folder_copied3=0
 
@@ -263,9 +253,11 @@ for key, value in dic_source_md5.items():
     
 
 
-print()    
+print()  
+
 print('The number of files copied are:', files_copied3)
 print( 'The number of folders copied are:', folder_copied3)
+
 print()
 print('*****************Checking the md5 of the whole folder*******************')
 print()
@@ -277,7 +269,3 @@ if md5_folders(path_source)==md5_folders(path_destination):
 else:
   print('The md5 of the whole folder was not correct.')
   print('It does not mean that the backup was not correct, maybe a file was removed from the original folder')
- 
-
-
-
