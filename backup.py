@@ -1,7 +1,7 @@
 import shutil
 import os
 import hashlib 
-
+from distutils.dir_util import copy_tree
 
 
 
@@ -137,7 +137,7 @@ for key in dic_source_size:
 
     else:
       print('The folder',key, ' is not present in the backup folder and it will be copied, together with its content.' )
-      shutil.copytree(os.path.join(path_source,key),os.path.join(path_destination,key))
+      copy_tree(os.path.join(path_source,key),os.path.join(path_destination,key))
       print(key, 'copied succesfully.')
       folder_copied +=1
       
@@ -159,6 +159,8 @@ print()
 files_copied2=0
 folder_copied2=0
 
+files_updated=0
+
 for key, value in dic_source_size.items():
  
   if value == dic_destination_size[key]:
@@ -168,7 +170,7 @@ for key, value in dic_source_size.items():
 
  
   elif value != dic_destination_size[key]:
-    
+    files_updated+=1
  
     if os.path.isfile(os.path.join(path_source,key)) == True:
       print('The file:',key, ' has not the same size  in the backup folder and it will be copied.' )
@@ -183,7 +185,7 @@ for key, value in dic_source_size.items():
       print('The folder:',key, ' has not the same size  in the backup folder and it will be copied.' )
       
 
-      shutil.copytree(os.path.join(path_source,key),os.path.join(path_destination,key))
+      copy_tree(os.path.join(path_source,key),os.path.join(path_destination,key))
       folder_copied2+=1
       print(key, 'copied succesfully.')
 
@@ -220,7 +222,7 @@ for key, value in dic_source_md5.items():
 
   elif value != dic_destination_md5[key]:
     
- 
+    files_updated+=1
     
     if os.path.isfile(os.path.join(path_source,key)) == True:
      
@@ -242,7 +244,7 @@ for key, value in dic_source_md5.items():
 
 
       print('The folder', key, 'did not pass the md5 check, and it will be copied.')
-      shutil.copytree(os.path.join(path_source,key),os.path.join(path_destination,key))
+      copy_tree(os.path.join(path_source,key),os.path.join(path_destination,key))
       print(key, 'copied succesfully.')
       folder_copied3+=1
       
@@ -266,6 +268,7 @@ print()
 print('The number of files in original folder is:', len(dic_source_md5))
 print('The number of files in backup folder is:',len(dic_destination_md5))
 print('The number of files copies is:', len(dic_destination_md5)-len(dest_list))
+print('The number of files updated is:', files_updated)
 
 
 if md5_folders(path_source)==md5_folders(path_destination):
