@@ -6,7 +6,7 @@ import hashlib
 import pathlib 
 from distutils.dir_util import copy_tree
 import math
-
+import errno
 
 
 print('The analysis started...')
@@ -14,18 +14,26 @@ print('The analysis started...')
 #The source folder
 path_source = "/home/alvaro/Documents/python/original_folder/"
 #list with the files in the source
-source_list=os.listdir(path_source)
-
+source_list=[]
 
 
 #The destination folder
 path_destination ='/home/alvaro/Documents/python/backup_folder/'
 #list with the files in the destination
-dest_list=os.listdir(path_destination)
+#dest_list=os.listdir(path_destination)
+dest_list = []
 
+#time in hours
+time_modification =  1
 
+for root, dirs, files in os.walk(path_source):
+  for name in files:
+    source_list.append(name)
 
-time_modification = 1 
+for root, dirs, files in os.walk(path_destination):
+  for name in files:
+    dest_list.append(name)
+# print(source_list)
 
 #This functions checks the md5, it will be use before and after the copying to check that everything is correct.
 def md5_files(fname):
@@ -35,207 +43,258 @@ def md5_files(fname):
             hash_md5.update(chunk)
     return hash_md5.hexdigest()
 
-def md5_folders(directory, verbose=0):
-  import hashlib, os
-  SHAhash = hashlib.md5()
-  if not os.path.exists (directory):
-    return -1
 
-  try:
-    for root, dirs, files in os.walk(directory):
-      for names in files:
-        if verbose == 1:
-          print( 'Hashing', names)
-        filepath = os.path.join(root,names)
-        try:
-          f1 = open(filepath, 'rb')
-        except:
-          # You can't open the file for some reason
-          f1.close()
-          continue
-
-        while 1:
-          # Read file in as little chunks
-          buf = f1.read(4096)
-          if not buf : break
-          SHAhash.update(hashlib.md5(buf).hexdigest().encode('utf-8'))
-        f1.close()
-
-  except:
-    import traceback
-    # Print the stack traceback
-    traceback.print_exc()
-    return -2
-
-  return SHAhash.hexdigest()
-
+#add the md5 string
 def paste0(string1):
 	#[-4:] to remove the .txt
 	text=string1 + '_md5.md5'
 	str(text)
 	return text
 
-def time_mod(file, days=1):
+def paste1(string1):
+  text = string1[:-8]+'.txt'
+  str(text)
+  return text
 
-    file_time = os.path.getmtime(os.path.join(path_source,file))
-    # Check against 24 hours 
-    return ((time.time() - file_time) / 3600)
 
-def files_to_copy(li1, li2): 
-    lst3 = [i for i in li1 + li2 if i not in li1 or i not in li2]
-    return lst3 
+#differences between two lists
+def files_to_copy(li1, li2):
+   return list(set(li1)-set(li2))
+
 
 def copy_file(file):
  return shutil.copy(os.path.join(path_source, file), os.path.join(path_destination, file))
 
-source_len=[]
 
+def copy_folder(folder):
+  return copy_tree(os.path.join(path_source, folder), os.path.join(path_destination,folder))
+
+def is_file(x):
+  return os.path.isfile(os.path.join(path_source,x))
+
+
+source_len=[]
+source_folder_len=[]
 for i in source_list:
-  if not i.endswith('_md5.md5'):
-    source_len.append(i)
+  if is_file(i):
+    if not i.endswith('_md5.md5'):
+      source_len.append(i)
+  else:
+    source_folder_len.append(i)
 
 dest_len=[]
+dest_len_folder=[]
+
 for i in dest_list:
-  if not i.endswith('_md5.md5'):
-    dest_len.append(i)
+  if is_file(i):
+    if not i.endswith('_md5.md5'):
+      dest_len.append(i)
+  else:
+    dest_len_folder.append(i)
 
 print('=======================================================================')
+print('The number of subfolders in the original_folder:', len(source_folder_len))
 print('The number of files in the original folder is:', len(source_len))
+print()
+print('The number of subfolders in the backup folder is:', len(dest_len_folder))
 print('The number of files in the backup folder is:', len(dest_len))
 print('=======================================================================')
 
+files_modified_last_h =0
 
-files_modified_last_12h =0
+for root, dirs, files in os.walk(path_source):
+  for name in files:
+    time_file = file_time = os.path.getmtime(os.path.join(root,name))
 
-for files in source_list:
-  if not files.endswith('_md5.md5'):
-    if time_mod(files)<time_modification:
-      files_modified_last_12h+=1
+    time_modi = ((time.time() - file_time) / 3600)
 
-        
-print('The number of files modified in the last',time_modification, 'hours is:', files_modified_last_12h)
+    if time_modi < time_modification:
+      files_modified_last_h+=1
+     
+print('The number of files/folders modified in the last',time_modification, 'hours is:', files_modified_last_h)
 print('Those files will not be backed up until the next backup.')
-print('The number of files that will continue the script are:', len(source_len)- files_modified_last_12h)
+print('The number of files that will continue the script are:', len(source_len)- files_modified_last_h)
 print('=======================================================================')
 
 md5_source_calculated=0
+md5_source_folder_calculated=0
 
+for root, dirs, files in os.walk(path_source):
+  for name in files:
 
-for file in source_list:
-  #Copy the files that hasn't been modified in the last 12h
-    if time_mod(file)>time_modification:
-            #Ignore the files ending with md5:
-      if file.endswith('_md5.md5'):
-#        print(file)
-        pass
-      #check if the file has already an _md5.md5 file associated,
-      #if so, ignore them
-      elif paste0(file[:-4]) in source_list:
-        pass
-      #files which md5 must be calculated and probably copied.
+    time_file = file_time = os.path.getmtime(os.path.join(root,name))
+
+    time_modi = ((time.time() - file_time) / 3600)
+
+#Copy the files that hasn't been modified in the last 12h
+    if time_modi>time_modification:
+            #Ignore the files ending with md5:           
+      if is_file(name):
+
+        if name.endswith('_md5.md5'):
+  #        print(file)
+          pass
+        #check if the file has already an _md5.md5 file associated,
+        #if so, ignore them
+        elif paste0(name[:-4]) in source_list:
+          pass
+        #files which md5 must be calculated and probably copied.
+        else:
+          md5_source_calculated+=1
+          md5_of_file = md5_files(os.path.join(root, name))
+          name_file=paste0(name[:-4])
+          with open(os.path.join(root,name_file),'w') as file:
+           file.write(md5_of_file)
+          source_list.append(name_file)
+          
       else:
-        md5_source_calculated+=1
-        md5_of_file = md5_files(os.path.join(path_source, file))
-        with open(os.path.join(path_source,paste0(file[:-4])),'w') as file:
-         file.write(md5_of_file)
+      #calculating md5 for files in the root of that dir
+        for name in files:
+          if name.endswith('_md5.md5'):
+            pass
 
-print('The calculation of the md5 of those files not modified in the last 12 ')
+          elif paste0(name[:-4]) in source_list:
+            pass
+            
+          else:    
+            md5_source_folder_calculated+=1
+
+            md5_of_file2=md5_files(os.path.join(root,name))
+
+            name_file2=paste0(name[:-4])
+
+            with open(os.path.join(root,name_file2),'w') as file:
+              file.write(md5_of_file2)
+
+
+print('The calculation of the md5 of those files not modified in the last', time_modification ,'hours')
 print('hours has been completed.')
 print('The number of md5 calculated is:', md5_source_calculated)
+print('The number of md5 of subfolders is:', md5_source_folder_calculated)
 print('=======================================================================')
 print('Checking which files are not in the backup folder already...')
 
 source_not_modified = []
 
-for file in source_list:
-  if time_mod(file)>time_modification:
-    if not file.endswith('_md5.md5'):
-        source_not_modified.append(file)
+
+for root, dirs, files in os.walk(path_source):
+  for name in files:
+
+    time_file = file_time = os.path.getmtime(os.path.join(root,name))
+
+    time_modi = ((time.time() - file_time) / 3600)
+
+    if time_modi>time_modification:
+      if not name.endswith('_md5.md5'):
+        source_not_modified.append(name)
+
 
 files_copy = files_to_copy(source_not_modified, dest_list)
 
 files_copy2 = []
 
-files_to_be_copied=0
+print('files to copy',files_copy)
 
-for i in files_copy:
-  if not i.endswith('_md5.md5'):
-    files_copy2.append(i)
-    files_to_be_copied+=1
-
-
-print('The files to be copied are:', files_to_be_copied)
-
-for i in files_copy2:
-  print(i)
+print('There are', len(files_copy),'files to be copied, which are:')
 
 print('=======================================================================')
 print('Copying the files...')
 
 files_copied=0
 
-for file in files_copy2:
-  copy_file(file)
-  files_copied+=1
-  #updating the list
-  dest_list.append(file)
-print(files_copied, 'files copied succesfully.')
+#Copying files
+for root, dirs, files in os.walk(path_source):
+  for name in files:
+    if name in files_copy:
+      #Replace the path_source with the destination to create the dir scheme
+      dst_dir = root.replace(path_source, path_destination, 1)
+      
+      #Create a dir if it doesn't exit
+      if not os.path.exists(dst_dir):
+        os.makedirs(dst_dir)
+        
+      #assign the destination names  
+      src_file = os.path.join(root, name)
+      dst_file = os.path.join(dst_dir, name)
+          
+      if os.path.exists(dst_file):
+          os.remove(dst_file)
 
+      shutil.copy(src_file, dst_dir)
+      files_copied+=1
+      #print(name, root, 'copied')
+      #
+print(files_copied, 'files copied succesfully.')
 
 print('=======================================================================')
 print('Calculating the md5 of the copied files in the backup_folder')
 
-
-
 md5_dest_calculated =0
 
-for file in   dest_list:
-    #Ignore the files ending with md5:
-    if file.endswith('_md5.md5'):
+dest_list=[]
+
+for root, dirs, files in os.walk(path_destination):
+  for name in files:
+    dest_list.append(name)
+
+for root, dirs, files in os.walk(path_destination):
+  for name in files:
+    if name.endswith('_md5.md5'):
       pass
-    #check if the file has already an _md5.md5 file associated,
-    #if so, ignore them
-    elif paste0(file[:-4]) in dest_list:
+    elif paste0(name[:-4]) in dest_list:
       pass
-    #files which md5 must be calculated and probably copied.
+    #files which md5 must be calculated
     else:
       md5_dest_calculated+=1
-      md5_of_file = md5_files(os.path.join(path_destination, file))
-      name_file = paste0(file[:-4])
-      with open(os.path.join(path_destination , name_file ),'w') as file:
+      md5_of_file = md5_files(os.path.join(root, name))
+      name_file = paste0(name[:-4])
+      with open(os.path.join(root , name_file ),'w') as file:
        file.write(md5_of_file)
       dest_list.append(name_file) 
 
-# for file in   dest_list:
-#     #Ignore the files ending with md5:
-#     if file.endswith('_md5.md5'):
-#       pass
-#     #check if the file has already an _md5.md5 file associated,
-#     #if so, ignore them
-#     elif paste0(file[:-4]) in dest_list:
-#       pass
-#     #files which md5 must be calculated and probably copied.
-#     else:
-#       md5_dest_calculated+=1
-#       md5_of_file = md5_files(os.path.join(path_destination, file))
-#       name_file = paste0(file[:-4])
-#       with open(os.path.join(path_destination,paste0(file[:-4])),'w') as file:
-#        file.write(md5_of_file)
-#       dest_list.append(paste0(file[:-4]))
 
-print('The number of md5 calculated is:', md5_dest_calculated)
+print('The number of md5 calculated in the backup folder is:', md5_dest_calculated)
+
 print('=======================================================================')
-print('Checking that the md5 are the same in both the original and backup folder')
+print('Checking that the md5 are the same in both the original and backup folder...')
 
 files_passed_md5 = 0
 
-if md5_dest_calculated>0:
-  for file in dest_list:
-      if file.endswith("_md5.md5"):
-        with open(os.path.join(path_destination, file),'r') as f1, open(os.path.join(path_source, file),'r') as f2:
-          for l1, l2 in zip(f1, f2):
-            if l1==l2:
-              print(file,'Passed the md5 test')
-              files_passed_md5+=1
+if md5_dest_calculated >0:
+  try:
+    for root, dirs, files in os.walk(path_source):
+      for name in files:
+        if paste1(name) in files_copy:
+          if name.endswith('_md5.md5'):
+            #Replace the path_source with the destination to create the dir scheme
+            dst_dir = root.replace(path_source, path_destination, 1)
+            
+            #assign the destination names  
+            src_file = os.path.join(root, name)
+            dst_file = os.path.join(dst_dir, name)
+
+            with open(src_file,'r') as f1, open(dst_file,'r') as f2:
+              for l1, l2 in zip(f1, f2):
+                if l1==l2:
+                  print(name,'Passed the md5 test')
+                  files_passed_md5+=1
+
+  except FileNotFoundError: 
+    print(file, 'was not found in one of the folders. And could not be md5 checked.') 
+
+else:
+  print('Since no file was copied, no files will be checked')
 
 print('The number of files that passed the md5 test are:', files_passed_md5 )            
+
+print('Careful with files with the same name, because set() only gets uniques')
+
+print('=======================================================================')
+print('=============================== RESULTS ===============================')
+
+
+print('Number of files copied:,', files_copied)
+print('Number of files that passed the checksum test:', files_passed_md5)
+print('Number of files in the original folder is:',len(source_list))
+print('Number of files in the backup folder is:',len(dest_list))
+print('Number of files modified in the last', time_modification,'hours is:', files_modified_last_h,'it was not copied.')
