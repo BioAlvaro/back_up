@@ -12,12 +12,14 @@ import errno
 print('The analysis started...')
 
 #The source folder
+#path_source = "t:/Proteomics/Exploris480_E307/Xcalibur/data/"
 path_source = "/home/alvaro/Documents/python/original_folder/"
 #list with the files in the source
 source_list=[]
 
 
 #The destination folder
+#path_destination ='//fgudata.fgu.local/FGU045/Proteomics/Proteomics_data/Exploris480_E307_bak/raw/'
 path_destination ='/home/alvaro/Documents/python/backup_folder/'
 #list with the files in the destination
 #dest_list=os.listdir(path_destination)
@@ -72,9 +74,14 @@ def copy_folder(folder):
 def is_file(x):
   return os.path.isfile(os.path.join(path_source,x))
 
+#print the md5 space, asterisc and name of file
+# def add_name(root,):
+#   md5=md5_files(os.path.join(root,name))
+
 
 source_len=[]
 source_folder_len=[]
+
 for i in source_list:
   if is_file(i):
     if not i.endswith('_md5.md5'):
@@ -128,43 +135,24 @@ for root, dirs, files in os.walk(path_source):
 
 #Copy the files that hasn't been modified in the last 12h
     if time_modi>time_modification:
-            #Ignore the files ending with md5:           
-      if is_file(name):
 
         if name.endswith('_md5.md5'):
-  #        print(file)
           pass
-        #check if the file has already an _md5.md5 file associated,
-        #if so, ignore them
+
         elif paste0(name[:-4]) in source_list:
           pass
-        #files which md5 must be calculated and probably copied.
-        else:
-          md5_source_calculated+=1
-          md5_of_file = md5_files(os.path.join(root, name))
-          name_file=paste0(name[:-4])
-          with open(os.path.join(root,name_file),'w') as file:
-           file.write(md5_of_file)
-          source_list.append(name_file)
           
-      else:
-      #calculating md5 for files in the root of that dir
-        for name in files:
-          if name.endswith('_md5.md5'):
-            pass
+        else:    
+          md5_source_folder_calculated+=1
 
-          elif paste0(name[:-4]) in source_list:
-            pass
-            
-          else:    
-            md5_source_folder_calculated+=1
+          md5_of_file2=md5_files(os.path.join(root,name))
 
-            md5_of_file2=md5_files(os.path.join(root,name))
+          name_file2=paste0(name[:-4])
 
-            name_file2=paste0(name[:-4])
-
-            with open(os.path.join(root,name_file2),'w') as file:
-              file.write(md5_of_file2)
+          write_inside=str(md5_of_file2+' *'+name)
+          print(write_inside)
+          with open(os.path.join(root,name_file2),'w') as file:
+            file.write(write_inside)
 
 
 print('The calculation of the md5 of those files not modified in the last', time_modification ,'hours')
@@ -248,8 +236,9 @@ for root, dirs, files in os.walk(path_destination):
       md5_dest_calculated+=1
       md5_of_file = md5_files(os.path.join(root, name))
       name_file = paste0(name[:-4])
+      write_inside=str(md5_of_file+' *'+name)
       with open(os.path.join(root , name_file ),'w') as file:
-       file.write(md5_of_file)
+       file.write(write_inside)
       dest_list.append(name_file) 
 
 
@@ -264,7 +253,7 @@ if md5_dest_calculated >0:
   try:
     for root, dirs, files in os.walk(path_source):
       for name in files:
-        if paste1(name) in files_copy:
+        #if paste1(name) in files_copy: 
           if name.endswith('_md5.md5'):
             #Replace the path_source with the destination to create the dir scheme
             dst_dir = root.replace(path_source, path_destination, 1)
