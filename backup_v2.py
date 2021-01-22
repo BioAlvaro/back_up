@@ -7,28 +7,28 @@ import pathlib
 from distutils.dir_util import copy_tree
 import math
 import errno
+#import pywintypes, win32file, win32con
 
 
 print('The analysis started...')
 
 #The source folder
-path_source = "t:/Proteomics/Exploris480_E307/Xcalibur/data/"
-#path_source = "/home/alvaro/Documents/python/original_folder/"
+#path_source = "t:/Proteomics/Exploris480_E307/Xcalibur/data/"
+path_source = "/home/alvaro/Documents/python/original_folder/"
 
 #list with the files in the source
 source_list=[]
 
-
 #The destination folder
-path_destination ='//fgudata.fgu.local/FGU045/Proteomics/Proteomics_data/Exploris480_E307_bak/raw/'
+#path_destination ='//fgudata.fgu.local/FGU045/Proteomics/Proteomics_data/Exploris480_E307_bak/raw/'
 #\\fgudata.fgu.local\FGU045\Proteomics\Proteomics_data\Exploris480_E307_bak\raw\
-#path_destination ='/home/alvaro/Documents/python/backup_folder/'
+path_destination ='/home/alvaro/Documents/python/backup_folder/'
 #list with the files in the destination
 #dest_list=os.listdir(path_destination)
 dest_list = []
 
 #time in hours
-time_modification =  1
+time_modification =  0
 
 for root, dirs, files in os.walk(path_source):
   for name in files:
@@ -50,10 +50,10 @@ def md5_files(fname):
 
 #add the md5 string
 def paste0(string1):
-	#[-4:] to remove the .txt
-	text=string1 + '_md5.md5'
-	str(text)
-	return text
+  #[-4:] to remove the .txt
+  text=string1 + '_md5.md5'
+  str(text)
+  return text
 
 def paste1(string1):
   text = string1[:-8]+'.txt'
@@ -67,7 +67,7 @@ def files_to_copy(li1, li2):
 
 
 def copy_file(file):
- return shutil.copy(os.path.join(path_source, file), os.path.join(path_destination, file))
+ return shutil.copystat(os.path.join(path_source, file), os.path.join(path_destination, file))
 
 
 def copy_folder(folder):
@@ -75,11 +75,6 @@ def copy_folder(folder):
 
 def is_file(x):
   return os.path.isfile(os.path.join(path_source,x))
-
-#print the md5 space, asterisc and name of file
-# def add_name(root,):
-#   md5=md5_files(os.path.join(root,name))
-
 
 source_len=[]
 source_folder_len=[]
@@ -130,11 +125,12 @@ md5_source_folder_calculated=0
 
 for root, dirs, files in os.walk(path_source):
   for name in files:
-
+    
     time_file = file_time = os.path.getmtime(os.path.join(root,name))
 
-    time_modi = ((time.time() - file_time) / 3600)
 
+    time_modi = ((time.time() - file_time) / 3600)
+    
 #Copy the files that hasn't been modified in the last 12h
     if time_modi>time_modification:
 
@@ -155,6 +151,7 @@ for root, dirs, files in os.walk(path_source):
           print(write_inside)
           with open(os.path.join(root,name_file2),'w') as file:
             file.write(write_inside)
+          os.utime(os.path.join(root,name_file2),(time_file, time_file))
 
 
 print('The calculation of the md5 of those files not modified in the last', time_modification ,'hours')
@@ -166,7 +163,6 @@ print('Checking which files are not in the backup folder already...')
 
 source_not_modified = []
 
-
 for root, dirs, files in os.walk(path_source):
   for name in files:
 
@@ -177,7 +173,6 @@ for root, dirs, files in os.walk(path_source):
     if time_modi>time_modification:
       if not name.endswith('_md5.md5'):
         source_not_modified.append(name)
-
 
 files_copy = files_to_copy(source_not_modified, dest_list)
 
@@ -210,10 +205,10 @@ for root, dirs, files in os.walk(path_source):
       if os.path.exists(dst_file):
           os.remove(dst_file)
 
-      shutil.copy(src_file, dst_dir)
+      shutil.copy2(src_file, dst_dir)
+      
       files_copied+=1
-      #print(name, root, 'copied')
-      #
+      
 print(files_copied, 'files copied succesfully.')
 
 print('=======================================================================')
@@ -238,11 +233,15 @@ for root, dirs, files in os.walk(path_destination):
       md5_dest_calculated+=1
       md5_of_file = md5_files(os.path.join(root, name))
       name_file = paste0(name[:-4])
+
+      time_file2 = os.path.getmtime(os.path.join(root,name))
+
       write_inside=str(md5_of_file+' *'+name)
       with open(os.path.join(root , name_file ),'w') as file:
        file.write(write_inside)
-      dest_list.append(name_file) 
+      os.utime(os.path.join(root,name_file),(time_file2, time_file2))
 
+      dest_list.append(name_file) 
 
 print('The number of md5 calculated in the backup folder is:', md5_dest_calculated)
 
