@@ -7,8 +7,6 @@ import pathlib
 from distutils.dir_util import copy_tree
 import math
 import errno
-#import pywintypes, win32file, win32con
-
 
 print('The analysis started...')
 
