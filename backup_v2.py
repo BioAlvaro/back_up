@@ -12,15 +12,17 @@ import errno
 print('The analysis started...')
 
 #The source folder
-#path_source = "t:/Proteomics/Exploris480_E307/Xcalibur/data/"
-path_source = "/home/alvaro/Documents/python/original_folder/"
+path_source = "t:/Proteomics/Exploris480_E307/Xcalibur/data/"
+#path_source = "/home/alvaro/Documents/python/original_folder/"
+
 #list with the files in the source
 source_list=[]
 
 
 #The destination folder
-#path_destination ='//fgudata.fgu.local/FGU045/Proteomics/Proteomics_data/Exploris480_E307_bak/raw/'
-path_destination ='/home/alvaro/Documents/python/backup_folder/'
+path_destination ='//fgudata.fgu.local/FGU045/Proteomics/Proteomics_data/Exploris480_E307_bak/raw/'
+#\\fgudata.fgu.local\FGU045\Proteomics\Proteomics_data\Exploris480_E307_bak\raw\
+#path_destination ='/home/alvaro/Documents/python/backup_folder/'
 #list with the files in the destination
 #dest_list=os.listdir(path_destination)
 dest_list = []
