@@ -138,7 +138,7 @@ for root, dirs, files in os.walk(path_source):
         elif paste0(name[:-4]) in source_list:
           pass
           
-        else:    
+        elif name.endswith('.raw'):    
           md5_source_folder_calculated+=1
 
           md5_of_file2=md5_files(os.path.join(root,name))
@@ -227,7 +227,7 @@ for root, dirs, files in os.walk(path_destination):
     elif paste0(name[:-4]) in dest_list:
       pass
     #files which md5 must be calculated
-    else:
+    elif name.endswith('.raw'):
       md5_dest_calculated+=1
       md5_of_file = md5_files(os.path.join(root, name))
       name_file = paste0(name[:-4])
