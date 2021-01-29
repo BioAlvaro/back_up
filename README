@@ -1,5 +1,6 @@
 This script does a backup of two folders, checking names, size of the folder and md5 checksums.
 
-Still needs to be updated to recognize folders/directories.
+Calculates the md5 of only the .raw files but copies everything.
 
+Added a timer to copy files that hasn't been modified in the last n time.
 
