@@ -1,6 +1,0 @@
-This backup is an improved version of the previous one.
-
-What it does is it checks if the files have been modified in the original folder in a period x of time.
-
-If the have not been modified, the md5 will be calculated, then copied (if they're not in the backup already),
-then calculate the md5 in the backup folder and compare the md5 original with the latest one. 
