@@ -11,22 +11,17 @@ import errno
 print('The analysis started...')
 
 #The source folder
-#path_source = "t:/Proteomics/Exploris480_E307/Xcalibur/data/"
-path_source = "/home/alvaro/Documents/python/original_folder/"
+path_source = '/home/alvaro/Documents/python/original_folder/'
 
 #list with the files in the source
 source_list=[]
 
 #The destination folder
-#path_destination ='//fgudata.fgu.local/FGU045/Proteomics/Proteomics_data/Exploris480_E307_bak/raw/'
-#\\fgudata.fgu.local\FGU045\Proteomics\Proteomics_data\Exploris480_E307_bak\raw\
 path_destination ='/home/alvaro/Documents/python/backup_folder/'
-#list with the files in the destination
-#dest_list=os.listdir(path_destination)
+
 dest_list = []
 
-#time in hours
-time_modification =  0
+
 
 for root, dirs, files in os.walk(path_source):
   for name in files:
@@ -94,48 +89,26 @@ for i in dest_list:
   else:
     dest_len_folder.append(i)
 
+
+
 print('=======================================================================')
 print('The number of subfolders in the original_folder:', len(source_folder_len))
 print('The number of files in the original folder is:', len(source_len))
-print()
 print('The number of subfolders in the backup folder is:', len(dest_len_folder))
 print('The number of files in the backup folder is:', len(dest_len))
 print('=======================================================================')
-
-files_modified_last_h =0
-
-for root, dirs, files in os.walk(path_source):
-  for name in files:
-    time_file = file_time = os.path.getmtime(os.path.join(root,name))
-
-    time_modi = ((time.time() - file_time) / 3600)
-
-    if time_modi < time_modification:
-      files_modified_last_h+=1
-     
-print('The number of files/folders modified in the last',time_modification, 'hours is:', files_modified_last_h)
-print('Those files will not be backed up until the next backup.')
-print('The number of files that will continue the script are:', len(source_len)- files_modified_last_h)
-print('=======================================================================')
+print('Calculating the md5 for newly created files...')
 
 md5_source_calculated=0
 md5_source_folder_calculated=0
 
 for root, dirs, files in os.walk(path_source):
   for name in files:
-    
-    time_file = file_time = os.path.getmtime(os.path.join(root,name))
 
-
-    time_modi = ((time.time() - file_time) / 3600)
-    
-#Copy the files that hasn't been modified in the last 12h
-    if time_modi>time_modification:
-
-        if name.endswith('_md5.md5'):
+        if name.endswith('_md5.md5'): # don't copy the md5 files
           pass
 
-        elif paste0(name[:-4]) in source_list:
+        elif paste0(name[:-4]) in source_list: # don't copy the ones that already have been copied
           pass
           
         elif name.endswith('.raw'):    
@@ -152,8 +125,6 @@ for root, dirs, files in os.walk(path_source):
           os.utime(os.path.join(root,name_file2),(time_file, time_file))
 
 
-print('The calculation of the md5 of those files not modified in the last', time_modification ,'hours')
-print('hours has been completed.')
 print('The number of md5 calculated is:', md5_source_calculated)
 print('The number of md5 of subfolders is:', md5_source_folder_calculated)
 print('=======================================================================')
@@ -163,22 +134,23 @@ source_not_modified = []
 
 for root, dirs, files in os.walk(path_source):
   for name in files:
-
-    time_file = file_time = os.path.getmtime(os.path.join(root,name))
-
-    time_modi = ((time.time() - file_time) / 3600)
-
-    if time_modi>time_modification:
       if not name.endswith('_md5.md5'):
         source_not_modified.append(name)
 
-files_copy = files_to_copy(source_not_modified, dest_list)
+files_copy = files_to_copy(source_not_modified, dest_list) # returns a list of the files that are not shared.
 
-files_copy2 = []
 
-print('files to copy',files_copy)
+number_raw_files_copied = 0
+
+for file in files_copy:
+  if file.endswith('.raw'):
+    number_raw_files_copied = number_raw_files_copied + 1
 
 print('There are', len(files_copy),'files to be copied, which are:')
+print(files_copy)
+
+print('There are:', number_raw_files_copied, ' raw files to be copied.')
+
 
 print('=======================================================================')
 print('Copying the files...')
@@ -203,7 +175,7 @@ for root, dirs, files in os.walk(path_source):
       if os.path.exists(dst_file):
           os.remove(dst_file)
 
-      shutil.copy2(src_file, dst_dir)
+      shutil.copy2(src_file, dst_dir) # copye the file
       
       files_copied+=1
       
@@ -282,7 +254,7 @@ print('=============================== RESULTS ===============================')
 
 
 print('Number of files copied:,', files_copied)
-print('Number of files that passed the checksum test:', files_passed_md5)
+print('Number of raw files copied:', number_raw_files_copied)
+print('Number of raw files that passed the checksum test:', files_passed_md5)
 print('Number of files in the original folder is:',len(source_list))
 print('Number of files in the backup folder is:',len(dest_list))
-print('Number of files modified in the last', time_modification,'hours is:', files_modified_last_h,'it was not copied.')
