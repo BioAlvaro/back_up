@@ -11,17 +11,17 @@ import errno
 print('The analysis started...')
 
 #The source folder
-path_source = '/home/alvaro/Documents/python/original_folder/'
+path_source = "T:/ProteoLab_Projects/PLK_Data/"
+#path_source = "/home/alvaro/Documents/python/original_folder/"
 
 #list with the files in the source
 source_list=[]
 
 #The destination folder
-path_destination ='/home/alvaro/Documents/python/backup_folder/'
+
+path_destination ='//fgudisk.fgu.local/045/Proteomics/Proteomics_data/Exploris480_E307_bak/raw/ProteoLab_Projects/PLK_Data'
 
 dest_list = []
-
-
 
 for root, dirs, files in os.walk(path_source):
   for name in files:
@@ -92,10 +92,8 @@ for i in dest_list:
 
 
 print('=======================================================================')
-print('The number of subfolders in the original_folder:', len(source_folder_len))
-print('The number of files in the original folder is:', len(source_len))
-print('The number of subfolders in the backup folder is:', len(dest_len_folder))
-print('The number of files in the backup folder is:', len(dest_len))
+print('The number of files in the original_folder is :', len(source_folder_len))
+print('The number of files in files in the backup folder:', len(dest_len_folder))
 print('=======================================================================')
 print('Calculating the md5 for newly created files...')
 
@@ -104,25 +102,28 @@ md5_source_folder_calculated=0
 
 for root, dirs, files in os.walk(path_source):
   for name in files:
+    #check when the file was created so this timestamp can also be added
+    # to the newly created md5.
+    time_file = file_time = os.path.getmtime(os.path.join(root,name))
 
-        if name.endswith('_md5.md5'): # don't copy the md5 files
-          pass
+    if name.endswith('_md5.md5'): # don't copy the md5 files
+      pass
 
-        elif paste0(name[:-4]) in source_list: # don't copy the ones that already have been copied
-          pass
-          
-        elif name.endswith('.raw'):    
-          md5_source_folder_calculated+=1
+    elif paste0(name[:-4]) in source_list: # don't copy the ones that already have been copied
+      pass
+      
+    elif name.endswith('.raw'):    
+      md5_source_folder_calculated+=1
 
-          md5_of_file2=md5_files(os.path.join(root,name))
+      md5_of_file2=md5_files(os.path.join(root,name))
 
-          name_file2=paste0(name[:-4])
+      name_file2=paste0(name[:-4])
 
-          write_inside=str(md5_of_file2+' *'+name)
-          print(write_inside)
-          with open(os.path.join(root,name_file2),'w') as file:
-            file.write(write_inside)
-          os.utime(os.path.join(root,name_file2),(time_file, time_file))
+      write_inside=str(md5_of_file2+' *'+name)
+      print(write_inside)
+      with open(os.path.join(root,name_file2),'w') as file:
+        file.write(write_inside)
+      os.utime(os.path.join(root,name_file2),(time_file, time_file))
 
 
 print('The number of md5 calculated is:', md5_source_calculated)
