@@ -11,15 +11,17 @@ import errno
 print('The analysis started...')
 
 #The source folder
-path_source = "T:/ProteoLab_Projects/PLK_Data/"
-#path_source = "/home/alvaro/Documents/python/original_folder/"
+#path_source = "T:/ProteoLab_Projects/PLK_Data/"
+path_source = "/home/alvaro/Documents/python/original_folder/"
+
 
 #list with the files in the source
 source_list=[]
 
 #The destination folder
 
-path_destination ='//fgudisk.fgu.local/045/Proteomics/Proteomics_data/Exploris480_E307_bak/raw/ProteoLab_Projects/PLK_Data'
+#path_destination ='//fgudisk.fgu.local/045/Proteomics/Proteomics_data/Exploris480_E307_bak/raw/ProteoLab_Projects/PLK_Data'
+path_destination = '/home/alvaro/Documents/python/backup_folder/'
 
 dest_list = []
 
@@ -59,21 +61,15 @@ def files_to_copy(li1, li2):
    return list(set(li1)-set(li2))
 
 
-def copy_file(file):
- return shutil.copystat(os.path.join(path_source, file), os.path.join(path_destination, file))
 
-
-def copy_folder(folder):
-  return copy_tree(os.path.join(path_source, folder), os.path.join(path_destination,folder))
-
-def is_file(x):
-  return os.path.isfile(os.path.join(path_source,x))
+def is_file(x, path):
+  return os.path.isfile(os.path.join(path,x))
 
 source_len=[]
 source_folder_len=[]
 
 for i in source_list:
-  if is_file(i):
+  if is_file(i, path_source):
     if not i.endswith('_md5.md5'):
       source_len.append(i)
   else:
@@ -83,7 +79,7 @@ dest_len=[]
 dest_len_folder=[]
 
 for i in dest_list:
-  if is_file(i):
+  if is_file(i, path_destination):
     if not i.endswith('_md5.md5'):
       dest_len.append(i)
   else:
@@ -177,6 +173,8 @@ for root, dirs, files in os.walk(path_source):
           os.remove(dst_file)
 
       shutil.copy2(src_file, dst_dir) # copye the file
+
+      print(name, ' copied succesfully.')
       
       files_copied+=1
       
