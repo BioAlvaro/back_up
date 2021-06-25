@@ -7,6 +7,8 @@ import hashlib
 def start_backup():
     date_now = datetime.now()
     date_now = date_now.strftime("%d/%m/%Y %H:%M:%S")
+    
+    print('=================================================')
 
     print('Back up started on: ', date_now)
 
