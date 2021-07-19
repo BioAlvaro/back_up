@@ -12,7 +12,7 @@ def start_backup():
 
     print('Back up started on: ', date_now)
 
-    exec(open('./backup_v2.py').read()) # Read and execute the back up scrip
+    exec(open('backup_v2.py').read()) # Read and execute the back up scrip
     
 
 scheduler = BlockingScheduler()
